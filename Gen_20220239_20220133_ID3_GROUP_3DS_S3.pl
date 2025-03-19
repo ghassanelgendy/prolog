@@ -5,7 +5,7 @@ players_in_team(Team, Players) :-
     gather_players(Team, [], Acc),  % Collect players in reverse order
     reverse(Acc, Players).          % Reverse the list for correct order
 
-% Recursive predicate to gather players in a team.
+% Recursive Predicate To Gather Players In a team.
 gather_players(Team, Acc, Players) :-
     player(P, Team, _),             % Find a player in the given team
     \+ member(P, Acc),              % Ensure no duplicates using built-in member/2
@@ -45,17 +45,19 @@ most_successful_team(Team) :-
 matches_of_team(Team, Matches) :-
     collect_matches(Team, Matches, []).
 
-% Base case: No more matches to process, return the accumulated list.
-collect_matches(_, Matches, Matches).
-
-% Case 1: If the team is Team1, add the match and continue.
+% Recursive clause for when Team appears as Team1.
 collect_matches(Team, Matches, Acc) :-
-    match(Team, Opponent, G1, G2),  % Team appears as Team1
-    \+ member((Team, Opponent, G1, G2), Acc),  % Avoid duplicate matches
+    match(Team, Opponent, G1, G2),
+    \+ member((Team, Opponent, G1, G2), Acc),
     collect_matches(Team, Matches, [(Team, Opponent, G1, G2) | Acc]).
 
-% Case 2: If the team is Team2, add the match and continue.
+% Recursive clause for when Team appears as Team2.
 collect_matches(Team, Matches, Acc) :-
-    match(Opponent, Team, G1, G2),  % Team appears as Team2
-    \+ member((Opponent, Team, G1, G2), Acc),  % Avoid duplicate matches
-    collect_matches(Team, Matches, [(Opponent, Team, G1, G2) | Acc]).
+    match(Opponent, Team, G1, G2),
+    \+ member((Opponent, Team, G1, G2), Acc),
+    collect_matches(Team, Matches, [(Opponent, Team, G1, G2) | Acc]),
+!.
+% Base case: no more matches can be added.
+collect_matches(_, Matches, Matches).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
