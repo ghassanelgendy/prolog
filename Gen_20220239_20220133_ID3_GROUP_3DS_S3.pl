@@ -1,26 +1,26 @@
 :- consult(league_data).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%% TASK 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Get a list of all players in a specific team %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Main predicate to get all players in a team.
 players_in_team(Team, Players) :-
-    gather_players(Team, [], Acc),  % Collect players in reverse order
-    reverse(Acc, Players),!.          % Reverse the list for correct order
+    gather_players(Team, [], Acc),    % Beylemhom fe list
+    reverse(Acc, Players),!.          % Reverse 3shan beylmhom backtracking
 
 % Recursive Predicate To Gather Players In a team.
 gather_players(Team, Acc, Players) :-
-    player(P, Team, _),             % Find a player in the given team
-    \+ member(P, Acc),!,             % Ensure no duplicates using built-in member/2
+    player(P, Team, _),              % Find a player in the given team
+    \+ member(P, Acc),!,             % En elesm da msh mawgoud fellist
     gather_players(Team, [P|Acc], Players). % Continue collecting players
 
 % Base case: When no more players are left, return the accumulated list.
 gather_players(_, Acc, Acc).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%% TASK 2 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Count how many teams are from a specific country %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Main predicate: Counts how many teams belong to a given country.
 count_teams_in_country(Country, Count) :-
-    find_teams(Country, [], Teams),  % Collect unique teams in a list
+    find_teams(Country, [], Teams),    % Collect unique teams in a list
     length(Teams, Count),!.            % Count the number of collected teams
 
 % Base case: Stop when no more teams exist in the given country.
@@ -30,11 +30,11 @@ find_teams(Country, Acc, Acc) :-
 % Recursive case: If a team belongs to the country and is not counted yet, add it.
 find_teams(Country, Acc, Teams) :-
     team(Team, Country, _),        % Find a team in the given country
-    \+ member(Team, Acc),          % Ensure it is not counted twice
-    find_teams(Country, [Team | Acc], Teams).  % Continue collecting teams
+    \+ member(Team, Acc),          % Msh mawgouda fel acc list
+    find_teams(Country, [Team | Acc], Teams).  % Continue collecting teams mangher elHead
 
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%% TASK 3 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Find the team with the most championship titles %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Main predicate: Find the most successful team.
@@ -43,6 +43,7 @@ most_successful_team(Team) :-
     \+ (team(_, _, OtherTitles), OtherTitles > Titles),
     !.  % Ensure no team has more titles
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%% TASK 4 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% List all matches where a specific team participated %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Main predicate: Collect all matches where a given team participated.
@@ -65,4 +66,5 @@ collect_matches(Team, Matches, Acc) :-
 % Base case: no more matches can be added.
 collect_matches(_, Matches, Matches).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%% TASK 7 %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Find the Most Common Position in a Specific Team %%%%%%%%%%%%%%%%%%%%%%%%%%%
