@@ -1,25 +1,27 @@
 :- consult(league_data).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Get a list of all players in a specific team %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Main predicate to get all players in a team.
 players_in_team(Team, Players) :-
     gather_players(Team, [], Acc),  % Collect players in reverse order
-    reverse(Acc, Players).          % Reverse the list for correct order
+    reverse(Acc, Players),!.          % Reverse the list for correct order
 
 % Recursive Predicate To Gather Players In a team.
 gather_players(Team, Acc, Players) :-
     player(P, Team, _),             % Find a player in the given team
-    \+ member(P, Acc),              % Ensure no duplicates using built-in member/2
+    \+ member(P, Acc),!,             % Ensure no duplicates using built-in member/2
     gather_players(Team, [P|Acc], Players). % Continue collecting players
 
 % Base case: When no more players are left, return the accumulated list.
 gather_players(_, Acc, Acc).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Count how many teams are from a specific country %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Main predicate: Counts how many teams belong to a given country.
 count_teams_in_country(Country, Count) :-
     find_teams(Country, [], Teams),  % Collect unique teams in a list
-    length(Teams, Count).            % Count the number of collected teams
+    length(Teams, Count),!.            % Count the number of collected teams
 
 % Base case: Stop when no more teams exist in the given country.
 find_teams(Country, Acc, Acc) :-
@@ -31,14 +33,17 @@ find_teams(Country, Acc, Teams) :-
     \+ member(Team, Acc),          % Ensure it is not counted twice
     find_teams(Country, [Team | Acc], Teams).  % Continue collecting teams
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Find the team with the most championship titles %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Main predicate: Find the most successful team.
 most_successful_team(Team) :-
     team(Team, _, Titles),              % Start with any team
-    \+ (team(_, _, OtherTitles), OtherTitles > Titles).  % Ensure no team has more titles
+    \+ (team(_, _, OtherTitles), OtherTitles > Titles),
+    !.  % Ensure no team has more titles
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Count how many teams are from a specific country %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 % Main predicate: Collect all matches where a given team participated.
@@ -49,14 +54,15 @@ matches_of_team(Team, Matches) :-
 collect_matches(Team, Matches, Acc) :-
     match(Team, Opponent, G1, G2),
     \+ member((Team, Opponent, G1, G2), Acc),
-    collect_matches(Team, Matches, [(Team, Opponent, G1, G2) | Acc]).
+    collect_matches(Team, Matches, [(Team, Opponent, G1, G2) | Acc]),
+    !. %3shan nstop elbacktracking ely malosh lazma (bonus)
 
 % Recursive clause for when Team appears as Team2.
 collect_matches(Team, Matches, Acc) :-
     match(Opponent, Team, G1, G2),
     \+ member((Opponent, Team, G1, G2), Acc),
-    collect_matches(Team, Matches, [(Opponent, Team, G1, G2) | Acc]).
-!.
+    collect_matches(Team, Matches, [(Opponent, Team, G1, G2) | Acc]),
+    !. %3shan nstop elbacktracking ely malosh lazma (bonus)
 % Base case: no more matches can be added.
 collect_matches(_, Matches, Matches).
 
