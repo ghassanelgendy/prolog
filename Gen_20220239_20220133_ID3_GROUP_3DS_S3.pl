@@ -1,0 +1,61 @@
+:- consult(league_data).
+
+% Main predicate to get all players in a team.
+players_in_team(Team, Players) :-
+    gather_players(Team, [], Acc),  % Collect players in reverse order
+    reverse(Acc, Players).          % Reverse the list for correct order
+
+% Recursive predicate to gather players in a team.
+gather_players(Team, Acc, Players) :-
+    player(P, Team, _),             % Find a player in the given team
+    \+ member(P, Acc),              % Ensure no duplicates using built-in member/2
+    gather_players(Team, [P|Acc], Players). % Continue collecting players
+
+% Base case: When no more players are left, return the accumulated list.
+gather_players(_, Acc, Acc).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Main predicate: Counts how many teams belong to a given country.
+count_teams_in_country(Country, Count) :-
+    find_teams(Country, [], Teams),  % Collect unique teams in a list
+    length(Teams, Count).            % Count the number of collected teams
+
+% Base case: Stop when no more teams exist in the given country.
+find_teams(Country, Acc, Acc) :-
+    \+ (team(Team, Country, _), \+ member(Team, Acc)).  % Stop when all teams are collected.
+
+% Recursive case: If a team belongs to the country and is not counted yet, add it.
+find_teams(Country, Acc, Teams) :-
+    team(Team, Country, _),        % Find a team in the given country
+    \+ member(Team, Acc),          % Ensure it is not counted twice
+    find_teams(Country, [Team | Acc], Teams).  % Continue collecting teams
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Main predicate: Find the most successful team.
+most_successful_team(Team) :-
+    team(Team, _, Titles),              % Start with any team
+    \+ (team(_, _, OtherTitles), OtherTitles > Titles).  % Ensure no team has more titles
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% Main predicate: Collect all matches where a given team participated.
+matches_of_team(Team, Matches) :-
+    collect_matches(Team, Matches, []).
+
+% Base case: No more matches to process, return the accumulated list.
+collect_matches(_, Matches, Matches).
+
+% Case 1: If the team is Team1, add the match and continue.
+collect_matches(Team, Matches, Acc) :-
+    match(Team, Opponent, G1, G2),  % Team appears as Team1
+    \+ member((Team, Opponent, G1, G2), Acc),  % Avoid duplicate matches
+    collect_matches(Team, Matches, [(Team, Opponent, G1, G2) | Acc]).
+
+% Case 2: If the team is Team2, add the match and continue.
+collect_matches(Team, Matches, Acc) :-
+    match(Opponent, Team, G1, G2),  % Team appears as Team2
+    \+ member((Opponent, Team, G1, G2), Acc),  % Avoid duplicate matches
+    collect_matches(Team, Matches, [(Opponent, Team, G1, G2) | Acc]).
