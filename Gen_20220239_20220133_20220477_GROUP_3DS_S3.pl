@@ -19,7 +19,7 @@ gather_players(_, Acc, Acc).
 %%%%%%%%%%%%%%%%%%%%%%%%%%% TASK 2 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Count how many teams are from a specific country %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-count_teams_in_country(Country, Count) :-
+team_count_by_country(Country, Count) :-
     find_teams(Country, [], Teams),    % Collect unique teams in a list
     length(Teams, Count),!.            % Count the number of collected teams
 
@@ -75,16 +75,18 @@ append([H|T], L, [H|R]) :- append(T, L, R). %law fy list fyha H w T zawed 3lehom
 
 num_matches_of_team(Team, Count) :-
     gather_matches(Team, [], Matches), %function btlem el matchees w thotohom f list
-    length(Matches, Count). %bnshoof hagm el  list dy
-
+    length(Matches, Count), %bnshoof hagm el  list dy
+    !.
 gather_matches(Team, Acc, Res) :-
     match(Team, Opp, GT, GO),%btdawar 3l matches ely el team l3b fyha
     \+ member(match(Team, Opp, GT, GO), Acc), %btt2aked en el match mesh mahtot abl keda
-    gather_matches(Team, [match(Team, Opp, GT, GO)|Acc], Res). %bnhotaha el list b3den ben-calll tany el function recursively
+    gather_matches(Team, [match(Team, Opp, GT, GO)|Acc], Res), %bnhotaha el list b3den ben-calll tany el function recursively
+    !.
 gather_matches(Team, Acc, Res) :- %btdawar fel matches ely el team fyha ka second parameter
     match(Opp, Team, GO, GT),
     \+ member(match(Opp, Team, GO, GT), Acc),
-    gather_matches(Team, [match(Opp, Team, GO, GT)|Acc], Res).
+    gather_matches(Team, [match(Opp, Team, GO, GT)|Acc], Res),
+    !.
 gather_matches(_, Acc, Acc).%lama btb2a el matches 5lst 5alaas
 %%%%%%%%%%%%%%%%%%%%%%%%%%% TASK 6 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Find the top goal scorer %%%%%%%%%%%%%%%%%%%%%%%%%%%
