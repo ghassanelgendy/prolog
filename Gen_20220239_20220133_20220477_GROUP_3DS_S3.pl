@@ -86,5 +86,36 @@ gather_matches(Team, Acc, Res) :- %btdawar fel matches ely el team fyha ka secon
     \+ member(match(Opp, Team, GO, GT), Acc),
     gather_matches(Team, [match(Opp, Team, GO, GT)|Acc], Res).
 gather_matches(_, Acc, Acc).%lama btb2a el matches 5lst 5alaas
+%%%%%%%%%%%%%%%%%%%%%%%%%%% TASK 6 %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Find the top goal scorer %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Main predicate: Find the player with the most goals.
+top_scorer(Player) :-
+    goals(Player, Goals),                  % Get a player's goals
+    \+ (goals(_, OtherGoals), OtherGoals > Goals),  % Ensure no player has more goals
+    !.  % Stop unnecessary backtracking
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%% TASK 7 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Find the Most Common Position in a Specific Team %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+most_common_position_in_team(Team, Position) :-
+    player(_, Team, Position),              % Pick a candidate position from the team
+    frequency(Team, Position, Count),       % Count how many players have that position
+    \+ ( player(_, Team, OtherPos),         % For any other position in the team,
+         frequency(Team, OtherPos, OtherCount),
+         OtherCount > Count ),              % ensure no other position has a higher count
+    !.                                      % Stop backtracking once the best is found
+
+% frequency/3 counts how many players in a team play in a given position.
+frequency(Team, Position, Count) :-
+    frequency_helper(Team, Position, 0, Count).
+
+% frequency_helper/4 uses a failure-driven loop:
+% For each solution of player(_,Team,Position), increment the accumulator,
+% then force backtracking with 'fail'. When no more players are found, succeed with the final Count.
+frequency_helper(Team, Position, Acc, Count) :-
+    player(_, Team, Position),
+    NewAcc is Acc + 1,
+    fail.
+frequency_helper(_, _, Count, Count).
