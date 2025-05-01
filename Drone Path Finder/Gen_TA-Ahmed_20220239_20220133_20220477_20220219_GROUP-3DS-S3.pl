@@ -1,3 +1,6 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% P1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 :- dynamic(grid/1).
 
 % Possible movement directions: right, left, down, up
@@ -157,3 +160,147 @@ solve :-
     write('Final Grid State:'), nl,
     mark_final_path(InitialGrid, OrderedPath),
     write('Total Packages Delivered: '), write(DeliveredCount), nl.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% P2 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%hn3araff el city grid ely hanshta8al 3leh ay mxn
+p2_grid(5, 5).
+
+%el example ely fel slides
+p2_cell(0, 0, empty).
+p2_cell(0, 1, empty).
+p2_cell(0, 2, package).
+p2_cell(0, 3, empty).
+p2_cell(0, 4, obstacle).
+p2_cell(1, 0, empty).
+p2_cell(1, 1, obstacle).
+p2_cell(1, 2, empty).
+p2_cell(1, 3, recharge).
+p2_cell(1, 4, package).
+p2_cell(2, 0, empty).
+p2_cell(2, 1, empty).
+p2_cell(2, 2, obstacle).
+p2_cell(2, 3, package).
+p2_cell(2, 4, empty).
+p2_cell(3, 0, package).
+p2_cell(3, 1, obstacle).
+p2_cell(3, 2, empty).
+p2_cell(3, 3, recharge).
+p2_cell(3, 4, empty).
+p2_cell(4, 0, empty).
+p2_cell(4, 1, empty).
+p2_cell(4, 2, empty).
+p2_cell(4, 3, obstacle).
+p2_cell(4, 4, empty).
+
+%hn3araf el moves
+p2_is_valid_move(Row, Col) :- %maynf3sh ytl3 bara el grid ,wala yroh 3la obstaacle
+    p2_grid(MaxRow, MaxCol),
+    Row >= 0,
+    Row < MaxRow,
+    Col >= 0,
+    Col < MaxCol,
+    p2_cell(Row, Col, Content),
+    Content \= obstacle.
+
+% hn3ml move 3shan n7rak eldrone , kol el directions f nafs ell function
+% 3shan keda keda prolog haygrbhom kolohomm backtracking
+
+p2_move((Row, Col), (NewRow, Col)) :- % Up
+    NewRow is Row - 1,
+    p2_is_valid_move(NewRow, Col). %etharak only if el move valid
+
+p2_move((Row, Col), (NewRow, Col)) :- % Down
+    NewRow is Row + 1,
+    p2_is_valid_move(NewRow, Col).
+
+p2_move((Row, Col), (Row, NewCol)) :- % Left
+    NewCol is Col - 1,
+    p2_is_valid_move(Row, NewCol).
+
+p2_move((Row, Col), (Row, NewCol)) :- % Right
+    NewCol is Col + 1,
+    p2_is_valid_move(Row, NewCol).
+
+%hnhadedd amaken kol el packages fel grid
+p2_find_all_packages(Packages) :-
+    findall((Row, Col), p2_cell(Row, Col, package), Packages).
+
+%hnst5dm haga thseb el distance men el drone lel package
+p2_distance((Row1, Col1), (Row2, Col2), Distance) :-
+    RowDiff is abs(Row1 - Row2),
+    ColDiff is abs(Col1 - Col2),
+    Distance is RowDiff + ColDiff.
+
+% hnbtdy n3rf ehna fen w el packages ely 3ayzynha fen
+:- dynamic p2_initial_energy/1. %dynamic variable momken yt8ayar during runtime
+p2_initial_state(StartState) :-
+    p2_find_all_packages(Packages),
+    write('Enter starting energy: '),
+    read(Energy), %5odha user input
+    retractall(p2_initial_energy(_)), %bysafarha 3shan law fy saved value men abl keda may3mlsh conflict
+    assertz(p2_initial_energy(Energy)),
+    StartState = state((0,0), [(0,0)], 0, Packages, Energy).
+
+%tab 3ayzeen nwsl ly eh asln?
+p2_goal(state(_, _, _, [],_)).
+
+%3ayzeen haga tharakna men state lel tanya
+p2_expand(state(Position, Path, Cost, PackagesLeft,Energy), NewState) :-
+    Energy > 0,
+    p2_move(Position, NewPosition),
+    \+ member(NewPosition, Path),
+    p2_update_state(state(Position, Path, Cost, PackagesLeft, Energy), NewPosition, NewState).
+
+%3ayzeen haga t-update el state bta3tna b3d elharaka dy
+p2_update_state(state(_, Path, Cost, PackagesLeft, Energy), NewPos, state(NewPos, [NewPos|Path], NewCost, NewPackagesLeft, NewEnergy)) :-
+    ( member(NewPos, PackagesLeft) ->
+        delete(PackagesLeft, NewPos, NewPackagesLeft) %law 3adena 3la package , shelha
+    ;
+        NewPackagesLeft = PackagesLeft
+    ),
+       ( NewPos = (Row, Col), p2_cell(Row, Col, recharge) ->
+        p2_initial_energy(MaxEnergy),
+        NewEnergy = MaxEnergy
+    ;
+        NewEnergy is Energy - 1
+    ),
+    NewCost is Cost + 1. % keda keda hnzwd el cost 3shan mshyna step
+
+%3ayzeen nhseb priority ely hn5tar 3la asaha ahsan road
+p2_priority(state(Position, _, CostSoFar, PackagesLeft,_), Priority) :-
+    p2_closest_package_distance(Position, PackagesLeft, Heuristic),
+    Priority is CostSoFar + Heuristic.
+
+p2_closest_package_distance(_, [], 0). %base casa law el packages 5lst
+
+p2_closest_package_distance(Position, [Package], Distance) :-  %law fadel package wahda bas ehseb elmasaafa lyha
+    p2_distance(Position, Package, Distance).
+
+p2_closest_package_distance(Position, [First|Rest], Distance) :- %llefely 3l packages men awl ellist lel a5r w  ehseb distance
+    p2_distance(Position, First, D1), %ehseb distance ly awl package w smyha d1
+    p2_closest_package_distance(Position, Rest, D2),  %shoof distnaces ly ba2y el  packages
+    ( D1 < D2 -> Distance = D1 ; Distance = D2 ). %bn3tmed el distance elas8ar el min distance
+
+p2_sort_by_priority(States, Sorted) :-
+    map_list_to_pairs(p2_priority, States, Pairs), %bnhot priority ly kol state momkena
+    keysort(Pairs, SortedPairs),%ascending sort according to ppriority
+    pairs_values(SortedPairs, Sorted). %bnshyl el arqam w bnsyb el states bs
+
+%BASE CASE El recursive function enna wsslna ly ely ehna 3ayzyno
+p2_astar([State|_], State) :-
+    p2_goal(State).
+
+p2_astar([CurrentState | RestStates], Solution) :-
+    findall(NewState, p2_expand(CurrentState, NewState), NewStates), %garab kol el possible moves wel states
+    append(RestStates, NewStates, TempStates),%hotohm fel list
+    p2_sort_by_priority(TempStates, SortedStates), %ratbhom
+    p2_astar(SortedStates, Solution).%recursive baa lhd ma nwsl lel bassse case
+
+p2_solve :-
+    p2_initial_state(Start),
+    p2_astar([Start], Solution),
+    write('Final State: '), nl,
+    write(Solution), nl.
